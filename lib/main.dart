@@ -1,121 +1,314 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
+// 1. TASK MODEL
+class Task {
+  final String title;
+  final bool important;
+  bool done;
+
+  Task({required this.title, this.important = false, this.done = false});
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+// 2. APPLICATION ENTRY POINT
+void main() {
+  runApp(const TodoApp());
+}
 
-  // This widget is the root of your application.
+class TodoApp extends StatelessWidget {
+  const TodoApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Raffaele Sulipano',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Raffaele Sulipano'),
+      title: 'To-Do List',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepPurple),
+      home: const ListPage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+// 3. MAIN TASK LIST PAGE
+class ListPage extends StatefulWidget {
+  const ListPage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<ListPage> createState() => _ListPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _ListPageState extends State<ListPage> {
+  final List<Task> _tasks = [];
 
-  void _incrementCounter() {
+  // R1: Add a new task
+  Future<void> _addTask() async {
+    final newTask = await Navigator.of(
+      context,
+    ).push<Task>(MaterialPageRoute(builder: (context) => const NewTaskPage()));
+
+    // Do nothing if the user cancels task creation.
+    if (!mounted || newTask == null) return;
+
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _tasks.add(newTask);
+    });
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(const SnackBar(content: Text('Task successfully added!')));
+  }
+
+  // R3: Update task completion status
+  void _changeState(Task task, bool done) {
+    setState(() {
+      task.done = done;
+    });
+  }
+
+  // R4: Delete a task after confirmation
+  Future<void> _deleteTask(Task task) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete task?'),
+          content: Text('Do you want to delete "${task.title}"?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    // Keep the task if the user cancels deletion.
+    if (!mounted || confirmed != true) return;
+
+    setState(() {
+      _tasks.remove(task);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    // Count completed tasks.
+    final nDone = _tasks.where((task) => task.done).length;
+
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+      appBar: AppBar(title: const Text('My Tasks')),
+
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _addTask,
+        icon: const Icon(Icons.add),
+        label: const Text('Add'),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+
+      body: Column(
+        children: [
+          // R2: Completed tasks counter
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              '$nDone of ${_tasks.length} tasks completed',
+              style: Theme.of(context).textTheme.titleMedium,
             ),
-          ],
-        ),
+          ),
+
+          // R2: Display tasks or an empty list message
+          Expanded(
+            child: _tasks.isEmpty
+                ? const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.assignment_outlined,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(height: 12),
+                        Text("You don't have any tasks yet."),
+                        SizedBox(height: 4),
+                        Text('Tap Add to create a task.'),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.only(
+                      left: 12,
+                      right: 12,
+                      bottom: 88,
+                    ),
+                    itemCount: _tasks.length,
+                    itemBuilder: (context, index) {
+                      final task = _tasks[index];
+
+                      return Card(
+                        child: ListTile(
+                          // Toggle completion using the checkbox.
+                          leading: Checkbox(
+                            value: task.done,
+                            onChanged: (value) {
+                              if (value != null) {
+                                _changeState(task, value);
+                              }
+                            },
+                          ),
+
+                          // Strike through completed tasks.
+                          title: Text(
+                            task.title,
+                            style: TextStyle(
+                              decoration: task.done
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                            ),
+                          ),
+
+                          // Display completion and importance.
+                          subtitle: Text(
+                            '${task.done ? "Done" : "To do"}'
+                            ' • '
+                            '${task.important ? "Important" : "Not important"}',
+                          ),
+
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Show a star for important tasks.
+                              if (task.important)
+                                const Icon(Icons.star, color: Colors.amber),
+
+                              // Delete task button.
+                              IconButton(
+                                tooltip: 'Delete task',
+                                icon: const Icon(Icons.delete_outline),
+                                onPressed: () {
+                                  _deleteTask(task);
+                                },
+                              ),
+                            ],
+                          ),
+
+                          // Toggle completion by tapping the row.
+                          onTap: () {
+                            _changeState(task, !task.done);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+    );
+  }
+}
+
+// 4. NEW TASK PAGE
+class NewTaskPage extends StatefulWidget {
+  const NewTaskPage({super.key});
+
+  @override
+  State<NewTaskPage> createState() => _NewTaskPageState();
+}
+
+class _NewTaskPageState extends State<NewTaskPage> {
+  final _formKey = GlobalKey<FormState>();
+
+  final _titleController = TextEditingController();
+
+  bool _important = false;
+
+  // S1: Validate the form and create a new task.
+  void _saveTask() {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final newTask = Task(
+      title: _titleController.text.trim(),
+      important: _important,
+    );
+
+    // Return the new task to the main page.
+    Navigator.of(context).pop(newTask);
+  }
+
+  @override
+  void dispose() {
+    // Release the text controller when leaving the page.
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('New Task')),
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Task title input field.
+              TextFormField(
+                controller: _titleController,
+                autofocus: true,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  labelText: 'Title',
+                  hintText: 'E.g. Study Flutter',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  // Reject empty titles or whitespace only.
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Title is required';
+                  }
+
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              // Task importance switch.
+              SwitchListTile(
+                title: const Text('Important'),
+                subtitle: const Text('Mark this task as important'),
+                value: _important,
+                onChanged: (value) {
+                  setState(() {
+                    _important = value;
+                  });
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              // Save task button.
+              FilledButton.icon(
+                onPressed: _saveTask,
+                icon: const Icon(Icons.check),
+                label: const Text('Save Task'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
