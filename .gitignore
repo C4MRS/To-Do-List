@@ -1,0 +1,108 @@
+
+# ==========================================
+# Flutter / Dart
+# ==========================================
+
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub/
+.pub-cache/
+build/
+coverage/
+**/doc/api/
+
+# Flutter SDK managed by FVM
+.fvm/flutter_sdk/
+
+# Debug symbols and obfuscation outputs
+app.*.symbols
+app.*.map.json
+
+# ==========================================
+# Android / Gradle
+# ==========================================
+
+.gradle/
+**/android/local.properties
+**/android/key.properties
+**/android/captures/
+**/android/.cxx/
+**/android/.externalNativeBuild/
+
+# Compiled packages
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.hprof
+
+# Signing credentials
+*.jks
+*.keystore
+
+# Local Firebase configuration (optional)
+google-services.json
+
+# ==========================================
+# iOS / macOS
+# ==========================================
+
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/**/DerivedData/
+**/ios/**/xcuserdata/
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/flutter_assets/
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+**/macos/Pods/
+**/macos/Flutter/ephemeral/
+
+# ==========================================
+# Windows / Linux
+# ==========================================
+
+**/windows/flutter/ephemeral/
+**/linux/flutter/ephemeral/
+
+# ==========================================
+# IDE / Editor
+# ==========================================
+
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# ==========================================
+# Logs / Temporary files
+# ==========================================
+
+*.log
+*.swp
+*~
+.DS_Store
+Thumbs.db
+hs_err_pid*
+
+# ==========================================
+# Environment variables / Secrets
+# ==========================================
+
+.env
+.env.*
+!.env.example
+
+# ==========================================
+# Documentation output
+# ==========================================
+
+doc/api/
